@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Resource/Icon/calendar.ico</file>
+        <file>Resource/Icon/clock.ico</file>
+        <file>Resource/Icon/close.ico</file>
+        <file>Resource/Icon/delete.ico</file>
+        <file>Resource/Icon/done.ico</file>
+        <file>Resource/Icon/edit.ico</file>
+        <file>Resource/Icon/minus.ico</file>
+        <file>Resource/Icon/MZPlan_Win_client.ico</file>
+        <file>Resource/Icon/packup.ico</file>
+        <file>Resource/Icon/pulldown.ico</file>
+        <file>Resource/Icon/refresh.ico</file>
+        <file>Resource/Icon/setting.ico</file>
+        <file>Resource/Icon/user.ico</file>
+        <file>Resource/Icon/lock.ico</file>
+        <file>Resource/Icon/unlock.ico</file>
+    </qresource>
+</RCC>
