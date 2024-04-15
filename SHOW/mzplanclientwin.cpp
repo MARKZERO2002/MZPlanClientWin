@@ -152,7 +152,7 @@ void MZPlanClientWin::checkRunning()
 
 void MZPlanClientWin::initMainWindow()
 {
-    //去除标题栏
+    //去除标题栏 和 任务栏
     this->setWindowFlags(Qt::FramelessWindowHint|Qt::Tool);
     //设置界面大小
     QSettings settings(DataUntil::getInstance().systemConfigPath,QSettings::IniFormat);
@@ -193,6 +193,12 @@ void MZPlanClientWin::updatePlanList()
     for(auto planList:this->planLists){
         planList->updatePlans();//每个列表去更新计划
     }
+}
+
+void MZPlanClientWin::clearPlanList()
+{
+    for(auto planList:this->planLists)
+        planList->clearPlans();//先清空，要不然切页就要删除掉plan了
 }
 
 /**
@@ -270,8 +276,11 @@ void MZPlanClientWin::on_calendarPageBtn_clicked()
 void MZPlanClientWin::on_userBtn_clicked()
 {
     if(DataUntil::getInstance().username!="local"){
+        //改变用户名
+        this->ui->UusernameE->setText(DataUntil::getInstance().username);
         this->ui->stackedWidget->setCurrentWidget(this->ui->userInfoPage);
     }else{
+
         this->ui->stackedWidget->setCurrentWidget(this->ui->loginPage);
     }
 }
@@ -343,6 +352,8 @@ void MZPlanClientWin::on_backToddayBtn_clicked()
 
 void MZPlanClientWin::on_refreshBtn_clicked()
 {
+    if(DataUntil::getInstance().isSynchronize)
+        NetWorkUntil::getInstance().synchronize();
     for(auto planList:this->planLists)
         planList->clearPlans();//先清空，要不然切页就要删除掉plan了
     DataUntil::getInstance().reloadChoicePlan(this->choiceDate);
@@ -363,8 +374,7 @@ void MZPlanClientWin::on_synchronizeBtn_stateChanged(int arg1)
         DataUntil::getInstance().isSynchronize=false;
     }
     //写入用户配置表中
-    QSettings settings(DataUntil::getInstance().userConfigPath,QSettings::IniFormat);
-    settings.setValue(MYSYNCHRONIZE,DataUntil::getInstance().isSynchronize);
+    DataUntil::getInstance().setSynchronize(DataUntil::getInstance().isSynchronize);
 }
 
 //点击快捷方式按钮
@@ -543,5 +553,60 @@ void MZPlanClientWin::on_lockBtn_clicked()
         this->lock=true;
         this->lockWindow();
     }
+}
+
+bool MZPlanClientWin::checkValid()
+{
+    QString username=this->ui->LusernameE->text();
+    QString password=this->ui->LpasswordE->text();
+    QRegularExpression re("^\\d+$"); // 正则表达式，匹配一个或多个数字
+    if(!re.match(username).hasMatch()){
+        QMessageBox::information(this,"提示","用户名只能由纯数字组成");
+        return false;
+    }
+    QRegularExpression re2("[^A-Za-z0-9_.]"); // 正则表达式，匹配任何非字母数字字符（除了下划线和点）
+    if(re2.match(password).hasMatch()||password.length()==0){
+        QMessageBox::information(this,"提示","密码只能由字母 数字 _ .组成");
+        return false;
+    }
+    return true;
+}
+
+void MZPlanClientWin::on_registBtn_clicked()
+{
+    QString username=this->ui->LusernameE->text();
+    QString password=this->ui->LpasswordE->text();
+    if(!this->checkValid())
+        return;
+    //发出注册请求
+    NetWorkUntil::getInstance().regist(username,password);
+}
+
+
+void MZPlanClientWin::on_loginBtn_clicked()
+{
+    QString username=this->ui->LusernameE->text();
+    QString password=this->ui->LpasswordE->text();
+    if(!this->checkValid())
+        return;
+    NetWorkUntil::getInstance().login(username,password);
+}
+
+
+void MZPlanClientWin::on_logoutBtn_clicked()
+{
+    NetWorkUntil::getInstance().logout();
+    this->clearPlanList();
+    DataUntil::getInstance().setSynchronize(false);
+    DataUntil::getInstance().changeUser("local");
+    DataUntil::getInstance().updateUser();
+    this->on_userBtn_clicked();
+}
+
+
+void MZPlanClientWin::on_cancelBtn_clicked()
+{
+    //注销
+    NetWorkUntil::getInstance().cancle();
 }
 

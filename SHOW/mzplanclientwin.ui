@@ -60,7 +60,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="../icon.qrc">
            <normaloff>:/Resource/Icon/clock.ico</normaloff>:/Resource/Icon/clock.ico</iconset>
          </property>
          <property name="iconSize">
@@ -80,7 +80,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="../icon.qrc">
            <normaloff>:/Resource/Icon/calendar.ico</normaloff>:/Resource/Icon/calendar.ico</iconset>
          </property>
          <property name="iconSize">
@@ -113,7 +113,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="../icon.qrc">
            <normaloff>:/Resource/Icon/user.ico</normaloff>:/Resource/Icon/user.ico</iconset>
          </property>
          <property name="iconSize">
@@ -133,7 +133,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="../icon.qrc">
            <normaloff>:/Resource/Icon/setting.ico</normaloff>:/Resource/Icon/setting.ico</iconset>
          </property>
          <property name="iconSize">
@@ -205,7 +205,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="../icon.qrc">
              <normaloff>:/Resource/Icon/minus.ico</normaloff>:/Resource/Icon/minus.ico</iconset>
            </property>
            <property name="iconSize">
@@ -231,7 +231,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="../icon.qrc">
              <normaloff>:/Resource/Icon/close.ico</normaloff>:/Resource/Icon/close.ico</iconset>
            </property>
            <property name="iconSize">
@@ -298,7 +298,7 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset>
+                <iconset resource="../icon.qrc">
                  <normaloff>:/Resource/Icon/refresh.ico</normaloff>:/Resource/Icon/refresh.ico</iconset>
                </property>
                <property name="iconSize">
@@ -772,7 +772,9 @@
    </layout>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="../icon.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>minusBtn</sender>

@@ -9,11 +9,12 @@
 #include <QScreen>
 #include <QSqlError>
 #include <QLayout>
-#include <NETWORK/networkuntil.h>
 
 #include <SHOW/mzplanclientwin.h>
 
 #include <SERVER/timerserver.h>
+
+#include <NETWORK/networkuntil.h>
 
 DataUntil &DataUntil::getInstance()
 {
@@ -21,6 +22,15 @@ DataUntil &DataUntil::getInstance()
     return instance;
 }
 
+void DataUntil::updateUser(){
+    //刷新计划数据 在changeUser里刷新会造成单例模式循环
+    MZPlanClientWin::getInstance().clearPlanList();
+    this->reloadChoicePlan(MZPlanClientWin::getInstance().choiceDate);
+    this->reloadCurrentPlan();
+    MZPlanClientWin::getInstance().updateInterface();
+    //刷新定时器 在changeUser里刷新会造成单例模式循环
+    TimerServer::getInstance().resetTimer();
+}
 void DataUntil::changeUser(const QString &username)
 {
     //更改用户名及相关地址
@@ -30,8 +40,23 @@ void DataUntil::changeUser(const QString &username)
     this->databasePath=this->userDirPath+QDir::separator()+"database.db3";
     //创建用户文件夹
     this->createUserDir();
+    //读取用户信息
+    this->initUserConfig();
     //更改数据库
     this->initDateBase();
+    //更改默认用户
+    QSettings settings(this->systemConfigPath,QSettings::IniFormat);
+    settings.setValue(DEFAULT_USER,username);
+
+}
+
+void DataUntil::removeUserDir()
+{
+    //断开DB不然删除会失败
+    if(this->DB.isOpen()){
+        this->DB.close();
+    }
+    QDir(this->userDirPath).removeRecursively();//递归删除
 }
 //判断该计划是否已完成
 bool DataUntil::isCompeleted(const Plan *plan)
@@ -200,6 +225,10 @@ void DataUntil::addPlan(Plan *plan)
     //把该计划写入数据库中
     this->dbinsert(plan);
     this->listAppendPlan(plan);
+    //更新时间
+    this->updateMedifyTime(QDateTime::currentDateTime().toString(DTFORMAT));
+    if(this->isSynchronize)
+        NetWorkUntil::getInstance().synchronize();
     //刷新主界面
     MZPlanClientWin::getInstance().updateInterface();
     //刷新定时器
@@ -211,6 +240,10 @@ void DataUntil::deletePlan(Plan *plan)
     //把该计划从数据库中删除
     this->dbdelete(plan);
     this->listDeletePlan(plan);
+    //更新时间
+    this->updateMedifyTime(QDateTime::currentDateTime().toString(DTFORMAT));
+    if(this->isSynchronize)
+        NetWorkUntil::getInstance().synchronize();
     //刷新主界面
     MZPlanClientWin::getInstance().updateInterface();
     //刷新定时器
@@ -228,6 +261,10 @@ void DataUntil::editPlan(Plan *oldPlan, Plan *newPlan)
     //移除和增加计划
     this->listDeletePlan(oldPlan);
     this->listAppendPlan(newPlan);
+    //更新时间
+    this->updateMedifyTime(QDateTime::currentDateTime().toString(DTFORMAT));
+    if(this->isSynchronize)
+        NetWorkUntil::getInstance().synchronize();
     //刷新主界面
     MZPlanClientWin::getInstance().updateInterface();
     //刷新定时器
@@ -235,7 +272,6 @@ void DataUntil::editPlan(Plan *oldPlan, Plan *newPlan)
     //释放旧指针内存
     delete oldPlan;
     oldPlan=nullptr;
-
 }
 
 void DataUntil::finishPlan(Plan *donePlan)
@@ -244,6 +280,10 @@ void DataUntil::finishPlan(Plan *donePlan)
     this->dbinsert(donePlan);
     //增加完成计划
     this->listAppendPlan(donePlan);
+    //更新时间
+    this->updateMedifyTime(QDateTime::currentDateTime().toString(DTFORMAT));
+    if(this->isSynchronize)
+        NetWorkUntil::getInstance().synchronize();
     //刷新主界面
     MZPlanClientWin::getInstance().updateInterface();
     //刷新定时器
@@ -269,6 +309,7 @@ DataUntil::~DataUntil()
         delete plan;
     for(auto donePlan:this->onceDonePlans)
         delete donePlan;
+    this->DB.close();
 }
 
 //初始化系统配置
@@ -299,13 +340,20 @@ void DataUntil::initUserConfig()
     //读取用户配置文件
     QSettings settings(this->userConfigPath,QSettings::IniFormat);
     this->isSynchronize=settings.value(MYSYNCHRONIZE).toBool();
+    this->medifyTime=settings.value(MEDIFY_TIME).toString();
 }
 //初始化数据库
 void DataUntil::initDateBase()
 {
     //打开SQLite数据库
-    this->DB=QSqlDatabase::addDatabase("QSQLITE");
-    this->DB.setDatabaseName(this->databasePath);
+    if(QSqlDatabase::contains("QSQLITE")){
+        this->DB=QSqlDatabase::database("QSQLITE");
+        this->DB.setDatabaseName(this->databasePath);
+    }
+    else{
+        this->DB=QSqlDatabase::addDatabase("QSQLITE","QSQLITE");
+        this->DB.setDatabaseName(this->databasePath);
+    }
     if(!this->DB.open()){
         QMessageBox::warning(nullptr,"错误","打开数据库失败："+this->databasePath);
         exit(0);
@@ -358,6 +406,44 @@ void DataUntil::reloadOnce()
         delete donePlan;
     this->oncePlans=this->loadOncePlan();
     this->onceDonePlans=this->loadOnceDonePlan();
+}
+
+void DataUntil::setSynchronize(bool flag)
+{
+    if(this->username=="local")
+        return;
+    this->isSynchronize=flag;
+    QSettings settings(this->userConfigPath,QSettings::IniFormat);
+    settings.setValue(MYSYNCHRONIZE,flag);
+}
+
+QByteArray DataUntil::getDbData()
+{
+    QFile file(this->databasePath);
+    file.open(QFile::ReadOnly);
+    QByteArray ans=file.readAll();
+    file.close();
+    return ans;
+}
+
+void DataUntil::writeDbData(QByteArray dbData)
+{
+    //写入之前要关闭数据库
+    if(this->DB.isOpen()){
+        this->DB.close();
+    }
+    QFile file(this->databasePath);
+    file.open(QFile::WriteOnly);
+    file.resize(0);
+    file.write(dbData);
+    file.close();
+}
+
+void DataUntil::updateMedifyTime(QString newMedifyTime)
+{
+    this->medifyTime=newMedifyTime;
+    QSettings s(this->userConfigPath,QSettings::IniFormat);
+    s.setValue(MEDIFY_TIME,newMedifyTime);
 }
 
 //读取某日的计划
@@ -470,8 +556,8 @@ void DataUntil::createUserDir()
         QFile file(this->userConfigPath);
         if(!file.exists()){
             QSettings settings(this->userConfigPath,QSettings::IniFormat);
-            settings.setValue(MYSYNCHRONIZE,false);
             settings.setValue(MEDIFY_TIME,"2000/01/01 00:00:00");
+            settings.setValue(MYSYNCHRONIZE,false);
         }
     }
 }

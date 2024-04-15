@@ -25,6 +25,7 @@ HEADERS += \
     DATA/datauntil.h \
     DATA/shortCut.h \
     NETWORK/networkuntil.h \
+    NETWORK/protocol.h \
     SERVER/timerserver.h \
     SERVER/userserver.h \
     SHOW/mzplanclientwin.h \

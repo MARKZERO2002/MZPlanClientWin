@@ -41,9 +41,12 @@ public:
     QSqlDatabase DB;
 public:
     static DataUntil &getInstance();
+    //用户操作
+    void updateUser();
     void changeUser(const QString &username);//更改当前用户
-    QList<Plan*> getChoicePlans(PlanList::Status status);//获取某个状态的所有计划
+    void removeUserDir();
     //数据操作
+    QList<Plan*> getChoicePlans(PlanList::Status status);//获取某个状态的所有计划
     void addPlan(Plan *plan);//添加计划
     void deletePlan(Plan *plan);//删除计划
     void editPlan(Plan *oldPlan,Plan *newPlan);//编辑计划
@@ -51,6 +54,11 @@ public:
     void reloadChoicePlan(QDate date);
     void reloadCurrentPlan();
     void reloadOnce();
+    void setSynchronize(bool flag);
+    //数据库
+    QByteArray getDbData();
+    void writeDbData(QByteArray dbData);
+    void updateMedifyTime(QString newMedifyTime);
 private:
     DataUntil();
     ~DataUntil();

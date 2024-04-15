@@ -37,6 +37,7 @@ private:
     //辅助函数
     bool checkShortcut();//检查快捷方式
     bool checkSelfStart();//检查开机自启
+    bool checkValid();//检查用户输入用户名、密码合法
     //全局快捷键
     bool  registerHotKey();//注册windows快捷键
     bool  unregisterHotKey();//注销windows快捷键
@@ -49,6 +50,7 @@ public:
     static MZPlanClientWin &getInstance();
     void updateInterface();//刷新界面
     void updatePlanList();//刷新计划列表
+    void clearPlanList();//清空计划
 private:
     //显示
     Ui::MZPlanClientWin *ui;
@@ -84,7 +86,7 @@ public slots:
     void handleTrayShow();
     void handleTrayQuit();
     void setCurrenDate(QDate date);
-private slots:
+public slots:
     //页面切换
     void on_planPageBtn_clicked();
     void on_calendarPageBtn_clicked();
@@ -104,5 +106,10 @@ private slots:
     void on_arouseKeySequenceEdit_editingFinished();
     void useKeyShortCut();//使用了快捷键
     void on_lockBtn_clicked();
+    void on_registBtn_clicked();
+    void on_loginBtn_clicked();
+private slots:
+    void on_logoutBtn_clicked();
+    void on_cancelBtn_clicked();
 };
 #endif // MZPLANCLIENTWIN_H
