@@ -60,7 +60,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../icon.qrc">
+          <iconset>
            <normaloff>:/Resource/Icon/clock.ico</normaloff>:/Resource/Icon/clock.ico</iconset>
          </property>
          <property name="iconSize">
@@ -80,7 +80,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../icon.qrc">
+          <iconset>
            <normaloff>:/Resource/Icon/calendar.ico</normaloff>:/Resource/Icon/calendar.ico</iconset>
          </property>
          <property name="iconSize">
@@ -113,7 +113,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../icon.qrc">
+          <iconset>
            <normaloff>:/Resource/Icon/user.ico</normaloff>:/Resource/Icon/user.ico</iconset>
          </property>
          <property name="iconSize">
@@ -133,7 +133,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../icon.qrc">
+          <iconset>
            <normaloff>:/Resource/Icon/setting.ico</normaloff>:/Resource/Icon/setting.ico</iconset>
          </property>
          <property name="iconSize">
@@ -205,7 +205,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../icon.qrc">
+            <iconset>
              <normaloff>:/Resource/Icon/minus.ico</normaloff>:/Resource/Icon/minus.ico</iconset>
            </property>
            <property name="iconSize">
@@ -231,7 +231,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../icon.qrc">
+            <iconset>
              <normaloff>:/Resource/Icon/close.ico</normaloff>:/Resource/Icon/close.ico</iconset>
            </property>
            <property name="iconSize">
@@ -298,7 +298,7 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset resource="../icon.qrc">
+                <iconset>
                  <normaloff>:/Resource/Icon/refresh.ico</normaloff>:/Resource/Icon/refresh.ico</iconset>
                </property>
                <property name="iconSize">
@@ -635,7 +635,7 @@
             <item>
              <widget class="QStackedWidget" name="settingStackedWidget">
               <property name="currentIndex">
-               <number>0</number>
+               <number>1</number>
               </property>
               <widget class="QWidget" name="normalizePage">
                <layout class="QFormLayout" name="formLayout_3">
@@ -749,6 +749,12 @@
                     <pointsize>12</pointsize>
                    </font>
                   </property>
+                  <property name="focusPolicy">
+                   <enum>Qt::ClickFocus</enum>
+                  </property>
+                  <property name="clearButtonEnabled">
+                   <bool>true</bool>
+                  </property>
                  </widget>
                 </item>
                </layout>
@@ -766,9 +772,7 @@
    </layout>
   </widget>
  </widget>
- <resources>
-  <include location="../icon.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>minusBtn</sender>

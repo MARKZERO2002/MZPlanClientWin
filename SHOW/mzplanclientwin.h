@@ -68,7 +68,7 @@ private:
     //快捷键
     QShortcut *shortcut=nullptr;
     QKeySequence shortcutSeq;
-    int MY_GLOBAL_HOTKEY_ID;
+    QList<int> MY_GLOBAL_HOTKEY_ID;
     //拖动
     bool lock;
     QPoint lastMousePos;

@@ -105,18 +105,30 @@ bool MZPlanClientWin::checkSelfStart()
 bool MZPlanClientWin::registerHotKey()
 {
     Qt::KeyboardModifiers allMods = Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier;
-    int sc=shortcutSeq[0],am=allMods;
-    Qt::Key key = Qt::Key((sc ^ am) & sc);
-    Qt::KeyboardModifiers mods = Qt::KeyboardModifiers(sc & am);
-    const quint32 nativeKey = nativeKeycode(key);
-    const quint32 nativeMods = nativeModifiers(mods);
-    MY_GLOBAL_HOTKEY_ID = nativeKey^nativeMods;
-    return RegisterHotKey(reinterpret_cast<HWND>(this->winId()), MY_GLOBAL_HOTKEY_ID, nativeMods, nativeKey);
+    // 提取Qt的键和修饰键
+    bool success=true;
+    MY_GLOBAL_HOTKEY_ID.resize(this->shortcutSeq.count());
+    for(int i=0;i<this->shortcutSeq.count();i++){
+        Qt::Key key = Qt::Key((this->shortcutSeq[i]^allMods)&this->shortcutSeq[i]);
+        Qt::KeyboardModifiers mods = Qt::KeyboardModifiers(this->shortcutSeq[i] & allMods);;
+        const quint32 nativeKey = nativeKeycode(key);
+        const quint32 nativeMods = nativeModifiers(mods);
+        MY_GLOBAL_HOTKEY_ID[i] = nativeKey^nativeMods;
+        if(!RegisterHotKey(reinterpret_cast<HWND>(this->winId()), MY_GLOBAL_HOTKEY_ID[i], nativeMods, nativeKey))
+            success=false;
+    }
+    return success;
 }
 
 bool MZPlanClientWin::unregisterHotKey()
 {
-    return UnregisterHotKey(reinterpret_cast<HWND>(this->winId()),MY_GLOBAL_HOTKEY_ID);
+    bool success=true;
+    for(int i=0;i<MY_GLOBAL_HOTKEY_ID.size();i++){
+        if(!UnregisterHotKey(reinterpret_cast<HWND>(this->winId()),MY_GLOBAL_HOTKEY_ID[i]))
+            success=false;
+    }
+    MY_GLOBAL_HOTKEY_ID.clear();
+    return success;
 }
 
 /**
@@ -387,7 +399,7 @@ void MZPlanClientWin::on_selfStartBtn_clicked()
     QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
     if(this->ui->selfStartBtn->isChecked()){
         //实现开机自启
-        QString path = QCoreApplication::applicationFilePath();
+        QString path = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());//分隔符要严格，与操作系统有关
         settings.setValue(QCoreApplication::applicationName(), path);
     }else{
         //取消开机自启
@@ -415,10 +427,18 @@ void MZPlanClientWin::on_arouseKeySequenceEdit_editingFinished()
             if(!this->registerHotKey())
                 QMessageBox::warning(this,"警告","快捷键设置失败2");
         }
+    }else{
+        if(shortcut){
+            this->unregisterHotKey();
+            delete shortcut;
+            shortcut=nullptr;
+        }
     }
     //写入系统配置信息
     QSettings sysSettings(DataUntil::getInstance().systemConfigPath,QSettings::IniFormat);
     sysSettings.setValue(SHORTCUT,this->shortcutSeq);
+    //失去焦点
+    this->ui->arouseKeySequenceEdit->clearFocus();
 }
 
 void MZPlanClientWin::useKeyShortCut()
@@ -433,10 +453,11 @@ void MZPlanClientWin::useKeyShortCut()
 }
 bool MZPlanClientWin::nativeEvent(const QByteArray &eventType, void *message, qintptr *result) {
     MSG *msg = reinterpret_cast<MSG*>(message);
-    if (msg->message == WM_HOTKEY) {
+    if (msg->message == WM_HOTKEY&&!this->ui->arouseKeySequenceEdit->hasFocus()) {
         // 检查是否为您的快捷键
         int id = HIWORD(msg->lParam)^LOWORD(msg->lParam);
-        if (id == MY_GLOBAL_HOTKEY_ID) {
+        if (-1 != MY_GLOBAL_HOTKEY_ID.indexOf(id)) {
+            qDebug()<<"hi";
             // 快捷键被按下，执行相应的操作
             this->useKeyShortCut();
             return true; // 事件已处理
