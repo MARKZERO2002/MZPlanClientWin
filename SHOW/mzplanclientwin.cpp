@@ -153,7 +153,7 @@ void MZPlanClientWin::checkRunning()
 void MZPlanClientWin::initMainWindow()
 {
     //去除标题栏
-    this->setWindowFlags(Qt::FramelessWindowHint);
+    this->setWindowFlags(Qt::FramelessWindowHint|Qt::Tool);
     //设置界面大小
     QSettings settings(DataUntil::getInstance().systemConfigPath,QSettings::IniFormat);
     QSize size=settings.value(SIZE).toSize();
@@ -443,8 +443,8 @@ void MZPlanClientWin::on_arouseKeySequenceEdit_editingFinished()
 
 void MZPlanClientWin::useKeyShortCut()
 {
-    if(this->isVisible()){
-        this->hide();
+    if(this->isActiveWindow()){
+        this->lower();
     }else{
         this->show();
         this->activateWindow();
@@ -457,7 +457,6 @@ bool MZPlanClientWin::nativeEvent(const QByteArray &eventType, void *message, qi
         // 检查是否为您的快捷键
         int id = HIWORD(msg->lParam)^LOWORD(msg->lParam);
         if (-1 != MY_GLOBAL_HOTKEY_ID.indexOf(id)) {
-            qDebug()<<"hi";
             // 快捷键被按下，执行相应的操作
             this->useKeyShortCut();
             return true; // 事件已处理
