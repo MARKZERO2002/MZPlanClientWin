@@ -11,7 +11,7 @@ Remind::Remind(QString title,QString content,QWidget *parent)
     ui->setupUi(this);
     //设置显示界面
     setWindowModality(Qt::NonModal);//非模态
-    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);//设置无边框和窗口总在最上层
+    setWindowFlags(Qt::FramelessWindowHint|Qt::Tool|Qt::WindowStaysOnTopHint);//设置无边框和窗口总在最上层
     //设置显示内容
     this->ui->title->setText(title);
     this->ui->content->setPlainText(content);
