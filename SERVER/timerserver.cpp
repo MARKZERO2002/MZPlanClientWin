@@ -69,6 +69,10 @@ TimerServer::TimerServer(QObject *parent)
 
 TimerServer::~TimerServer()
 {
+    for(auto r:this->remindDialogQueue){
+        delete r;
+        r=nullptr;
+    }
     this->remindDialogQueue.clear();
 }
 
@@ -88,19 +92,19 @@ void TimerServer::remind()
     switch(this->timeType){
     case BEGIN_TIME:
         //发出一个新开始弹窗
-        remindDialog=new Remind("计划开始","你有一个计划开始啦："+this->nowTimerPlan->content);
+        remindDialog=new Remind("计划开始","你有一个计划开始啦："+this->nowTimerPlan->content,nullptr);
         this->remindDialogQueue.enqueue(remindDialog);
         remindDialog->show();
         break;
     case REMIND_TIME:
         //发出一个新提醒弹窗
-        remindDialog=new Remind("计划到达提醒时间","你所定下的计划到达提醒时间啦："+this->nowTimerPlan->content);
+        remindDialog=new Remind("计划到达提醒时间","你所定下的计划到达提醒时间啦："+this->nowTimerPlan->content,nullptr);
         this->remindDialogQueue.enqueue(remindDialog);
         remindDialog->show();
         break;
     case DEAD_TIME:
         //发出一个计划未完成窗
-        remindDialog=new Remind("计划未完成","噢！你有一个计划没有完成，快来检查是否已经完成："+this->nowTimerPlan->content);
+        remindDialog=new Remind("计划未完成","噢！你有一个计划没有完成，快来检查是否已经完成："+this->nowTimerPlan->content,nullptr);
         this->remindDialogQueue.enqueue(remindDialog);
         remindDialog->show();
         break;

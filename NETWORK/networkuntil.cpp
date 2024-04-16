@@ -26,7 +26,7 @@ void NetWorkUntil::regist(QString username,QString password)
     data.insert(PASSWORD,password);
     pdu.data=data;
     this->tcpSocket->write(pdu.toByteArray());
-    if(!this->tcpSocket->waitForReadyRead()&&!this->tcpSocket){
+    if(!this->tcpSocket->waitForReadyRead()){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
         delete this->tcpSocket;
@@ -45,7 +45,7 @@ void NetWorkUntil::login(QString username,QString password)
     data.insert(PASSWORD,password);
     pdu.data=data;
     this->tcpSocket->write(pdu.toByteArray());
-    if(!this->tcpSocket->waitForReadyRead()&&!this->tcpSocket){
+    if(!this->tcpSocket->waitForReadyRead()){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
         delete this->tcpSocket;
@@ -63,7 +63,7 @@ void NetWorkUntil::cancle()
     data.insert(USERNAME,DataUntil::getInstance().username);
     pdu.data=data;
     this->tcpSocket->write(pdu.toByteArray());
-    if(!this->tcpSocket->waitForReadyRead()&&!this->tcpSocket){
+    if(!this->tcpSocket->waitForReadyRead()){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
         delete this->tcpSocket;
@@ -85,7 +85,7 @@ void NetWorkUntil::synchronize(bool status)
     data.insert(MEDIFYTIME,DataUntil::getInstance().medifyTime);
     pdu.data=data;
     this->tcpSocket->write(pdu.toByteArray());
-    if(!this->tcpSocket->waitForReadyRead()&&!this->tcpSocket){
+    if(!this->tcpSocket->waitForReadyRead()){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
         delete this->tcpSocket;
@@ -203,6 +203,9 @@ void NetWorkUntil::initTcp()
             }
         });
         connect(this->tcpSocket,&QTcpSocket::readyRead,this,&NetWorkUntil::handleTcpSocketReadyRead);//读数据
+    }
+    if(this->tcpSocket->state()!=QAbstractSocket::ConnectedState){
+        DataUntil::getInstance().setSynchronize(false);
     }
 }
 

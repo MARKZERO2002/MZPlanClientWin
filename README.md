@@ -10,4 +10,9 @@ clone,zip，下载后是一个开发环境的Qt qmake程序。
 ![添加计划](文档\addPlan.png)
 ![计划显示](文档\planShow.png)
 ![日历显示](文档\calendarShow.png)
+
 **这个是只显示一次性计划，有规则的计划是不显示的**
+
+![提醒](文档\remind.png)
+
+**提醒功能，双击提醒框自动切换到程序主界面**

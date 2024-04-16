@@ -152,8 +152,8 @@ void MZPlanClientWin::checkRunning()
 
 void MZPlanClientWin::initMainWindow()
 {
-    //去除标题栏 和 任务栏
-    this->setWindowFlags(Qt::FramelessWindowHint|Qt::Tool);
+    //去除标题栏
+    this->setWindowFlags(Qt::FramelessWindowHint);
     //设置界面大小
     QSettings settings(DataUntil::getInstance().systemConfigPath,QSettings::IniFormat);
     QSize size=settings.value(SIZE).toSize();
@@ -454,7 +454,7 @@ void MZPlanClientWin::on_arouseKeySequenceEdit_editingFinished()
 void MZPlanClientWin::useKeyShortCut()
 {
     if(this->isActiveWindow()){
-        this->lower();
+        this->hide();
     }else{
         this->show();
         this->activateWindow();
