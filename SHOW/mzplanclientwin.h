@@ -51,6 +51,7 @@ public:
     void updateInterface();//刷新界面
     void updatePlanList();//刷新计划列表
     void clearPlanList();//清空计划
+    void setSynchronize(bool flag);
 private:
     //显示
     Ui::MZPlanClientWin *ui;
@@ -100,7 +101,7 @@ public slots:
     void on_currentDate_dateChanged(const QDate &date);
     void on_backToddayBtn_clicked();
     void on_refreshBtn_clicked();
-    void on_synchronizeBtn_stateChanged(int arg1);
+    void on_synchronizeBtn_stateChanged();
     void on_desktopShortcutBtn_clicked();
     void on_selfStartBtn_clicked();
     void on_arouseKeySequenceEdit_editingFinished();

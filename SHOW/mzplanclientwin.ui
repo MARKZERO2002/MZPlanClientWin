@@ -635,7 +635,7 @@
             <item>
              <widget class="QStackedWidget" name="settingStackedWidget">
               <property name="currentIndex">
-               <number>1</number>
+               <number>0</number>
               </property>
               <widget class="QWidget" name="normalizePage">
                <layout class="QFormLayout" name="formLayout_3">
@@ -651,6 +651,9 @@
                   </property>
                  </widget>
                 </item>
+                <item row="0" column="1">
+                 <widget class="ImageSwitch" name="synchronizeBtn" native="true"/>
+                </item>
                 <item row="1" column="0">
                  <widget class="QLabel" name="label_5">
                   <property name="font">
@@ -662,6 +665,9 @@
                    <string>开机自启：</string>
                   </property>
                  </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="ImageSwitch" name="selfStartBtn" native="true"/>
                 </item>
                 <item row="2" column="0">
                  <widget class="QLabel" name="label_6">
@@ -675,52 +681,10 @@
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="synchronizeBtn">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QCheckBox" name="selfStartBtn">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                 </widget>
-                </item>
                 <item row="2" column="1">
-                 <widget class="QCheckBox" name="desktopShortcutBtn">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                 </widget>
+                 <widget class="ImageSwitch" name="desktopShortcutBtn" native="true"/>
                 </item>
                </layout>
-               <zorder>desktopShortcutBtn</zorder>
-               <zorder>label_4</zorder>
-               <zorder>label_5</zorder>
-               <zorder>label_6</zorder>
-               <zorder>synchronizeBtn</zorder>
-               <zorder>selfStartBtn</zorder>
               </widget>
               <widget class="QWidget" name="shortCutKeyPage">
                <layout class="QFormLayout" name="formLayout_4">
@@ -772,6 +736,14 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ImageSwitch</class>
+   <extends>QWidget</extends>
+   <header location="global">DESINER/imageswitch.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../icon.qrc"/>
  </resources>

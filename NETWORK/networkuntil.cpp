@@ -32,6 +32,7 @@ void NetWorkUntil::regist(QString username,QString password)
         delete this->tcpSocket;
         this->tcpSocket=nullptr;
         DataUntil::getInstance().setSynchronize(false);
+        MZPlanClientWin::getInstance().setSynchronize(false);
     }
 }
 
@@ -51,6 +52,7 @@ void NetWorkUntil::login(QString username,QString password)
         delete this->tcpSocket;
         this->tcpSocket=nullptr;
         DataUntil::getInstance().setSynchronize(false);
+        MZPlanClientWin::getInstance().setSynchronize(false);
     }
 }
 
@@ -69,6 +71,7 @@ void NetWorkUntil::cancle()
         delete this->tcpSocket;
         this->tcpSocket=nullptr;
         DataUntil::getInstance().setSynchronize(false);
+        MZPlanClientWin::getInstance().setSynchronize(false);
     }
 }
 

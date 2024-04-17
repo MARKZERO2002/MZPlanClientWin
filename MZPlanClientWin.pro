@@ -10,6 +10,7 @@ CONFIG += c++17
 
 SOURCES += \
     DATA/datauntil.cpp \
+    DESINER/imageswitch.cpp \
     NETWORK/networkuntil.cpp \
     SERVER/timerserver.cpp \
     SERVER/userserver.cpp \
@@ -24,6 +25,7 @@ SOURCES += \
 HEADERS += \
     DATA/datauntil.h \
     DATA/shortCut.h \
+    DESINER/imageswitch.h \
     NETWORK/networkuntil.h \
     NETWORK/protocol.h \
     SERVER/timerserver.h \
@@ -55,4 +57,5 @@ RC_FILE += \
     MZPlanClientWin.rc
 
 RESOURCES += \
-    icon.qrc
+    icon.qrc \
+    main.qrc

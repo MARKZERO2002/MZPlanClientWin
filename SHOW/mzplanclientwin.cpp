@@ -11,6 +11,7 @@
 #include <QSettings>
 #include <SERVER/timerserver.h>
 #include <NETWORK/networkuntil.h>
+#include <DESINER/imageswitch.h>
 
 MZPlanClientWin::MZPlanClientWin(QWidget *parent)
     : QMainWindow(parent)
@@ -165,8 +166,12 @@ void MZPlanClientWin::initMainWindow()
     this->ui->currentDate->setDate(QDate::currentDate());
     //设置系统托盘
     this->initTray();
+    //连接信号
+    connect(this->ui->synchronizeBtn,&ImageSwitch::checkedChanged,this,&MZPlanClientWin::on_synchronizeBtn_stateChanged);
+    connect(this->ui->selfStartBtn,&ImageSwitch::checkedChanged,this,&MZPlanClientWin::on_selfStartBtn_clicked);
+    connect(this->ui->desktopShortcutBtn,&ImageSwitch::checkedChanged,this,&MZPlanClientWin::on_desktopShortcutBtn_clicked);
     //设置设置页
-    this->ui->synchronizeBtn->setCheckState(DataUntil::getInstance().isSynchronize==true?Qt::Checked:Qt::Unchecked);
+    this->ui->synchronizeBtn->setChecked(DataUntil::getInstance().isSynchronize==true);
     //设置拖动
     QSettings sysS=QSettings(DataUntil::getInstance().systemConfigPath,QSettings::IniFormat);
     this->lock=sysS.value(POSITION_LOCK).toBool();
@@ -199,6 +204,11 @@ void MZPlanClientWin::clearPlanList()
 {
     for(auto planList:this->planLists)
         planList->clearPlans();//先清空，要不然切页就要删除掉plan了
+}
+
+void MZPlanClientWin::setSynchronize(bool flag)
+{
+    this->ui->synchronizeBtn->setChecked(flag);
 }
 
 /**
@@ -363,10 +373,9 @@ void MZPlanClientWin::on_refreshBtn_clicked()
     this->updateInterface();
 }
 
-
-void MZPlanClientWin::on_synchronizeBtn_stateChanged(int arg1)
+void MZPlanClientWin::on_synchronizeBtn_stateChanged()
 {
-    if(arg1==Qt::Checked){
+    if(this->ui->synchronizeBtn->getChecked()){
         DataUntil::getInstance().isSynchronize=true;
         //立即同步一次
         NetWorkUntil::getInstance().synchronize();
@@ -375,6 +384,7 @@ void MZPlanClientWin::on_synchronizeBtn_stateChanged(int arg1)
     }
     //写入用户配置表中
     DataUntil::getInstance().setSynchronize(DataUntil::getInstance().isSynchronize);
+    this->ui->synchronizeBtn->setChecked(DataUntil::getInstance().isSynchronize);
 }
 
 //点击快捷方式按钮
@@ -382,7 +392,7 @@ void MZPlanClientWin::on_desktopShortcutBtn_clicked()
 {
     //如果是打勾，则在桌面建立一个快捷方式
     QString deskTopPath,srcFile;
-    if(this->ui->desktopShortcutBtn->isChecked()){
+    if(this->ui->desktopShortcutBtn->getChecked()){
         //判断桌面快捷方式是否存在，存在就不管，不存在就添加
 #if defined(Q_OS_WIN)
         deskTopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
@@ -407,7 +417,7 @@ void MZPlanClientWin::on_desktopShortcutBtn_clicked()
 void MZPlanClientWin::on_selfStartBtn_clicked()
 {
     QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
-    if(this->ui->selfStartBtn->isChecked()){
+    if(this->ui->selfStartBtn->getChecked()){
         //实现开机自启
         QString path = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());//分隔符要严格，与操作系统有关
         settings.setValue(QCoreApplication::applicationName(), path);
@@ -417,7 +427,7 @@ void MZPlanClientWin::on_selfStartBtn_clicked()
     }
     //写入系统配置表中
     QSettings sysSettings(DataUntil::getInstance().systemConfigPath,QSettings::IniFormat);
-    sysSettings.setValue(SELF_START,this->ui->selfStartBtn->isChecked());
+    sysSettings.setValue(SELF_START,this->ui->selfStartBtn->getChecked());
 }
 
 
