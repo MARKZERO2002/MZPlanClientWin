@@ -94,7 +94,7 @@ void PlanList::initInterface(Status status)
     this->ui->title->setText(Plan::statusStr[status]);
     //隐藏界面
     if(status==1)
-        this->ui->statusImg->setPixmap(QPixmap(":icon/Resource/Icon/packup.ico"));
+        this->ui->statusImg->setPixmap(QPixmap(":/Resource/Icon/packup.ico"));
     else
         this->ui->showPlanArea->hide();
     //更改界面颜色

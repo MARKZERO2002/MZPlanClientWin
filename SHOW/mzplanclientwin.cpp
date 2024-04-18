@@ -153,8 +153,9 @@ void MZPlanClientWin::checkRunning()
 
 void MZPlanClientWin::initMainWindow()
 {
-    //去除标题栏
-    this->setWindowFlags(Qt::FramelessWindowHint);
+    //去除标题栏 背景透明
+    setAttribute(Qt::WA_TranslucentBackground, true);
+    setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
     //设置界面大小
     QSettings settings(DataUntil::getInstance().systemConfigPath,QSettings::IniFormat);
     QSize size=settings.value(SIZE).toSize();
@@ -171,6 +172,7 @@ void MZPlanClientWin::initMainWindow()
     connect(this->ui->selfStartBtn,&ImageSwitch::checkedChanged,this,&MZPlanClientWin::on_selfStartBtn_clicked);
     connect(this->ui->desktopShortcutBtn,&ImageSwitch::checkedChanged,this,&MZPlanClientWin::on_desktopShortcutBtn_clicked);
     //设置设置页
+    this->ui->title->setText("通用设置");
     this->ui->synchronizeBtn->setChecked(DataUntil::getInstance().isSynchronize==true);
     //设置拖动
     QSettings sysS=QSettings(DataUntil::getInstance().systemConfigPath,QSettings::IniFormat);
@@ -316,12 +318,14 @@ void MZPlanClientWin::on_settingPageBtn_clicked()
 
 void MZPlanClientWin::on_normalSettingBtn_clicked()
 {
+    this->ui->title->setText("通用设置");
     this->ui->settingStackedWidget->setCurrentWidget(this->ui->normalizePage);
 }
 
 
 void MZPlanClientWin::on_shortCutKeySettingBtn_clicked()
 {
+    this->ui->title->setText("快捷键设置");
     this->ui->settingStackedWidget->setCurrentWidget(this->ui->shortCutKeyPage);
 }
 

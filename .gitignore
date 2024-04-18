@@ -73,3 +73,8 @@ CMakeLists.txt.user*
 *.exe
 
 /build
+/debug
+/x64
+/release
+*.aps
+*.qtvscr

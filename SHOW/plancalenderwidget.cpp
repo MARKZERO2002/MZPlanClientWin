@@ -9,7 +9,7 @@
 PlanCalenderWidget::PlanCalenderWidget(QWidget *parent)
     :QCalendarWidget(parent)
 {
-    connect(this,&PlanCalenderWidget::activated,&MZPlanClientWin::getInstance(),&MZPlanClientWin::getInstance().setCurrenDate);
+    connect(this,&PlanCalenderWidget::activated,&MZPlanClientWin::getInstance(),&MZPlanClientWin::setCurrenDate);
     this->updateData();
 }
 

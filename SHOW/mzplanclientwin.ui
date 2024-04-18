@@ -13,6 +13,41 @@
   <property name="windowTitle">
    <string>MZPlanClientWin</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">*{
+	font: 900 12pt &quot;爱奇艺黑体 Black&quot;;
+}
+QSystemTrayIcon{
+	color:rgb(0, 0, 0);
+}
+QPushButton{
+	background-color: rgb(65, 131, 245);
+}
+QPushButton:hover{
+	background-color: rgb(49, 108, 245);
+}
+#frame,#header{
+	background-color: rgba(231, 255, 255,200);
+}
+#frame QToolButton:hover{
+	background-color: rgb(231, 255, 255);
+}
+#closeBtn:hover{
+	background-color: rgba(255, 0, 0, 100);
+}
+#minusBtn:hover{
+	background-color: rgba(0, 255, 255, 100);
+}
+#loginPage,#planWidget,#settingStackedWidget,#userInfoPage,#calendarPage{
+	border-image: url(:/Resource/Picture/homeBackground.jpg);
+}
+#planPageHeader,#frame_3,#horizontalFrame{
+	background-color: rgb(135, 148, 148);
+}
+#calendarPage *,#currentDate *,#currentDate{
+	color: rgb(0, 0, 0);
+}</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <property name="spacing">
@@ -32,6 +67,9 @@
     </property>
     <item>
      <widget class="QFrame" name="frame">
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
       </property>
@@ -152,6 +190,9 @@
     </item>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QFrame" name="header">
         <property name="frameShape">
@@ -335,8 +376,10 @@
                </property>
                <property name="font">
                 <font>
-                 <family>黑体</family>
-                 <pointsize>16</pointsize>
+                 <family>爱奇艺黑体 Black</family>
+                 <pointsize>12</pointsize>
+                 <italic>false</italic>
+                 <fontweight>Black</fontweight>
                 </font>
                </property>
                <property name="styleSheet">
@@ -372,7 +415,10 @@
                </property>
                <property name="font">
                 <font>
-                 <pointsize>10</pointsize>
+                 <family>爱奇艺黑体 Black</family>
+                 <pointsize>12</pointsize>
+                 <italic>false</italic>
+                 <fontweight>Black</fontweight>
                 </font>
                </property>
                <property name="text">
@@ -542,7 +588,10 @@
                </property>
                <property name="font">
                 <font>
-                 <pointsize>15</pointsize>
+                 <family>爱奇艺黑体 Black</family>
+                 <pointsize>12</pointsize>
+                 <italic>false</italic>
+                 <fontweight>Black</fontweight>
                 </font>
                </property>
                <property name="text">
@@ -563,7 +612,10 @@
                </property>
                <property name="font">
                 <font>
-                 <pointsize>15</pointsize>
+                 <family>爱奇艺黑体 Black</family>
+                 <pointsize>12</pointsize>
+                 <italic>false</italic>
+                 <fontweight>Black</fontweight>
                 </font>
                </property>
                <property name="text">
@@ -608,7 +660,10 @@
                 <widget class="QLabel" name="title">
                  <property name="font">
                   <font>
-                   <pointsize>11</pointsize>
+                   <family>爱奇艺黑体 Black</family>
+                   <pointsize>12</pointsize>
+                   <italic>false</italic>
+                   <fontweight>Black</fontweight>
                   </font>
                  </property>
                  <property name="text">
@@ -643,7 +698,10 @@
                  <widget class="QLabel" name="label_4">
                   <property name="font">
                    <font>
+                    <family>爱奇艺黑体 Black</family>
                     <pointsize>12</pointsize>
+                    <italic>false</italic>
+                    <fontweight>Black</fontweight>
                    </font>
                   </property>
                   <property name="text">
@@ -658,7 +716,10 @@
                  <widget class="QLabel" name="label_5">
                   <property name="font">
                    <font>
+                    <family>爱奇艺黑体 Black</family>
                     <pointsize>12</pointsize>
+                    <italic>false</italic>
+                    <fontweight>Black</fontweight>
                    </font>
                   </property>
                   <property name="text">
@@ -673,7 +734,10 @@
                  <widget class="QLabel" name="label_6">
                   <property name="font">
                    <font>
+                    <family>爱奇艺黑体 Black</family>
                     <pointsize>12</pointsize>
+                    <italic>false</italic>
+                    <fontweight>Black</fontweight>
                    </font>
                   </property>
                   <property name="text">
@@ -692,7 +756,10 @@
                  <widget class="QLabel" name="label_7">
                   <property name="font">
                    <font>
+                    <family>爱奇艺黑体 Black</family>
                     <pointsize>12</pointsize>
+                    <italic>false</italic>
+                    <fontweight>Black</fontweight>
                    </font>
                   </property>
                   <property name="text">
@@ -710,7 +777,10 @@
                   </property>
                   <property name="font">
                    <font>
+                    <family>爱奇艺黑体 Black</family>
                     <pointsize>12</pointsize>
+                    <italic>false</italic>
+                    <fontweight>Black</fontweight>
                    </font>
                   </property>
                   <property name="focusPolicy">

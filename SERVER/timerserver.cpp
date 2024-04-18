@@ -3,6 +3,7 @@
 #include <DATA/datauntil.h>
 
 #include <SHOW/mzplanclientwin.h>
+#include <QGuiApplication>
 TimerServer &TimerServer::getInstance()
 {
     static TimerServer instance;

@@ -15,5 +15,6 @@
         <file>Resource/Icon/user.ico</file>
         <file>Resource/Icon/lock.ico</file>
         <file>Resource/Icon/unlock.ico</file>
+        <file>Resource/Picture/homeBackground.jpg</file>
     </qresource>
 </RCC>
