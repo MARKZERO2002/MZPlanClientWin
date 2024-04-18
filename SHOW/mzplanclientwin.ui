@@ -17,9 +17,6 @@
    <string notr="true">*{
 	font: 900 12pt &quot;爱奇艺黑体 Black&quot;;
 }
-QSystemTrayIcon{
-	color:rgb(0, 0, 0);
-}
 QPushButton{
 	background-color: rgb(65, 131, 245);
 }
@@ -39,7 +36,8 @@ QPushButton:hover{
 	background-color: rgba(0, 255, 255, 100);
 }
 #loginPage,#planWidget,#settingStackedWidget,#userInfoPage,#calendarPage{
-	border-image: url(:/Resource/Picture/homeBackground.jpg);
+	
+	background-image: url(:/Resource/Picture/homeBackgound.png);
 }
 #planPageHeader,#frame_3,#horizontalFrame{
 	background-color: rgb(135, 148, 148);

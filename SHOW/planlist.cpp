@@ -45,18 +45,23 @@ void PlanList::updatePlans()
 void PlanList::initColor()
 {
     //计划、标题框的颜色改变
+    this->ui->showPlanArea->setStyleSheet("background-color: rgba(0, 0, 0,0)");
     switch(this->planStatus){
     case UNSTARAT:
         this->ui->Header->setStyleSheet("background-color: rgb(168, 168, 168);");
+        this->ui->planLayout->setStyleSheet("background-color: rgba(168, 168, 168,100);");
         break;
     case DOING:
         this->ui->Header->setStyleSheet("background-color: rgb(255,250,205);");
+        this->ui->planLayout->setStyleSheet("background-color: rgba(255,250,205,100);");
         break;
     case FINISH:
         this->ui->Header->setStyleSheet("background-color: rgb(127,255,212);");
+        this->ui->planLayout->setStyleSheet("background-color: rgba(127,255,212,100);");
         break;
     case UNFINISH:
         this->ui->Header->setStyleSheet("background-color: rgb(255,106,106);");
+        this->ui->planLayout->setStyleSheet("background-color: rgba(255,106,106,100);");
         break;
     }
 }

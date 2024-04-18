@@ -78,3 +78,4 @@ CMakeLists.txt.user*
 /release
 *.aps
 *.qtvscr
+/.vs
