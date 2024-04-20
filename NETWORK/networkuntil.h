@@ -25,6 +25,7 @@ public:
 private:
     QTcpSocket *tcpSocket=nullptr;
     bool status;//判断是不是打开软件时的同步
+    QByteArray m_buffer;//接收缓冲区
 private:
     NetWorkUntil();
     ~NetWorkUntil();

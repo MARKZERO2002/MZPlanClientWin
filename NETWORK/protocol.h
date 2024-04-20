@@ -34,15 +34,7 @@ struct PDU{
     PDU(){
 
     }
-    PDU(QByteArray byteData){
-        //从byteData中读出消息类型
-        QJsonParseError e;
-        QJsonDocument jsDoc=QJsonDocument::fromJson(byteData,&e);
-        if(e.error!=QJsonParseError::NoError){
-            qDebug()<<"(protocol.h)解析传输数据时失败:"<<e.errorString();
-            return;
-        }
-        //根据消息类型从byteData中读出数据，存入jsonDoc中
+    PDU(QJsonDocument jsDoc){
         QJsonObject jsObj=jsDoc.object();
         this->msgType=(MsgType)jsObj.value(MSGTYPE).toInt();
         this->data=jsObj.value(DATA).toObject();

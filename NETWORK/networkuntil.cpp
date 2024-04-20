@@ -235,7 +235,16 @@ void NetWorkUntil::initTcp()
 
 void NetWorkUntil::handleTcpSocketReadyRead()
 {
-    PDU pdu=PDU(this->tcpSocket->readAll());
+    //检测收到的数据是否是完整的json格式
+    this->m_buffer.append(this->tcpSocket->readAll());
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(m_buffer, &error);
+    if(error.error!=QJsonParseError::NoError){//说明没接收到完整消息
+        return;
+    }
+    //收到完整消息了 释放缓冲区
+    this->m_buffer.clear();
+    PDU pdu=PDU(doc);
     switch(pdu.msgType){
     case REGIST_RESPONSE:
         this->handleRegist(pdu.data);

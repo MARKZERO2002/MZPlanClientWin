@@ -329,7 +329,7 @@ void DataUntil::initSystemConfig()
         settings.setValue(SIZE,QSize(600,availableSize.height()));//程序默认大小
         settings.setValue(POSITION_LOCK,false);//程序位置是否锁定
         settings.setValue(SELF_START,false);//开机自启
-        settings.setValue("address","192.168.63.1");
+        settings.setValue("address","8.138.130.176");
         settings.setValue("port",1314);
     }
     //读取系统配置文件 设置用户

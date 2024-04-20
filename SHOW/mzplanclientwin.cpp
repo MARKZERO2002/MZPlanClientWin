@@ -311,6 +311,8 @@ void MZPlanClientWin::on_settingPageBtn_clicked()
     this->ui->desktopShortcutBtn->setChecked(this->checkShortcut());
     //检查开机自启
     this->ui->selfStartBtn->setChecked(this->checkSelfStart());
+    //检查同步
+    this->ui->synchronizeBtn->setChecked(DataUntil::getInstance().isSynchronize);
     //切换界面
     this->ui->stackedWidget->setCurrentWidget(this->ui->settingPage);
 }
