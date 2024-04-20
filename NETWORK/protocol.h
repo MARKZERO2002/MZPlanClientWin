@@ -14,18 +14,20 @@
 #define DONEPLAN "donePlan"
 #define MEDIFYTIME "medifyTime"
 #define DB_DATA "dbData"
-//客户端发来的消息类型
+//消息类型
 enum MsgType{
-    //接收
+    //客户端发出
     LOGIN_REQUEST,
     REGIST_REQUEST,
     CANCEL_REQUEST,
     SYNOCHRONIZE_PLAN_REQUEST,//同步计划 指客户端要求检查哪边的数据更新，把新的发回去
-    //发回去
+    //服务端发出
     LOGIN_RESPONSE,
     REGIST_RESPONSE,
     CANCEL_RESPONSE,
-    SYNOCHRONIZE_PLAN_RESPONSE
+    SYNOCHRONIZE_PLAN_RESPONSE,
+    //要求更新客户端数据
+    UPDATE
 };
 
 struct PDU{

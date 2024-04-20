@@ -19,11 +19,12 @@ public:
     void handleLogin(QJsonObject data);
     void handleCancle(QJsonObject data);
     void handleSynchronize(QJsonObject data);//status用于判断是否是程序初始化完成前发出的请求
+    void handleUpdate(QJsonObject data);
     //销毁连接
     void logout();
 private:
     QTcpSocket *tcpSocket=nullptr;
-    bool status;
+    bool status;//判断是不是打开软件时的同步
 private:
     NetWorkUntil();
     ~NetWorkUntil();

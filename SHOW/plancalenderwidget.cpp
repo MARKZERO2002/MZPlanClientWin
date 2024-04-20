@@ -9,6 +9,7 @@
 PlanCalenderWidget::PlanCalenderWidget(QWidget *parent)
     :QCalendarWidget(parent)
 {
+    //双击触发该信号，切换到页面去
     connect(this,&PlanCalenderWidget::activated,&MZPlanClientWin::getInstance(),&MZPlanClientWin::setCurrenDate);
     this->updateData();
 }
@@ -39,7 +40,8 @@ void PlanCalenderWidget::paintCell(QPainter *painter, const QRect &rect, QDate d
     QCalendarWidget::paintCell(painter, rect, date);
     // 当前日期中含有几个一次性计划，要显示出来，而且根据是开始时间还是提醒时间还是结束时间显示不同颜色的数量
     //计算位置
-    QRect beginRect =rect,remindRect=rect,endRect=rect;
+    QRect beginRect =rect,remindRect=rect,endRect=rect,todayRect=rect;
+    todayRect.adjust(-rect.width()/2,-rect.height()/2,0,0);
     beginRect.adjust(-rect.width()/2, rect.height() / 2, 0, 0);
     remindRect.adjust(0,rect.height()/2,0,0);
     endRect.adjust(rect.width()/2,rect.height()/2,0,0);
@@ -73,5 +75,12 @@ void PlanCalenderWidget::paintCell(QPainter *painter, const QRect &rect, QDate d
     if(endCount!=0){
         painter->setPen(Qt::red);
         painter->drawText(endRect, Qt::AlignCenter, QString::number(endCount));
+    }
+    if(date==QDate::currentDate()){
+        QFont font;
+        font.setPointSize(12);
+        painter->setFont(font);
+        painter->setPen(Qt::green);
+        painter->drawText(todayRect,Qt::AlignCenter,"今");
     }
 }

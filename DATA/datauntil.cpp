@@ -31,7 +31,7 @@ void DataUntil::updateUser(){
     //刷新定时器 在changeUser里刷新会造成单例模式循环
     TimerServer::getInstance().resetTimer();
 }
-void DataUntil::changeUser(const QString &username)
+bool DataUntil::changeUser(const QString &username)
 {
     //更改用户名及相关地址
     this->username=username;
@@ -39,7 +39,7 @@ void DataUntil::changeUser(const QString &username)
     this->userConfigPath=this->userDirPath+QDir::separator()+"user.ini";
     this->databasePath=this->userDirPath+QDir::separator()+"database.db3";
     //创建用户文件夹
-    this->createUserDir();
+    bool ans=this->createUserDir();
     //读取用户信息
     this->initUserConfig();
     //更改数据库
@@ -47,7 +47,7 @@ void DataUntil::changeUser(const QString &username)
     //更改默认用户
     QSettings settings(this->systemConfigPath,QSettings::IniFormat);
     settings.setValue(DEFAULT_USER,username);
-
+    return ans;
 }
 
 void DataUntil::removeUserDir()
@@ -55,6 +55,8 @@ void DataUntil::removeUserDir()
     //断开DB不然删除会失败
     if(this->DB.isOpen()){
         this->DB.close();
+        this->DB=QSqlDatabase();
+        this->DB.removeDatabase("QSQLITE");
     }
     QDir(this->userDirPath).removeRecursively();//递归删除
 }
@@ -327,6 +329,8 @@ void DataUntil::initSystemConfig()
         settings.setValue(SIZE,QSize(600,availableSize.height()));//程序默认大小
         settings.setValue(POSITION_LOCK,false);//程序位置是否锁定
         settings.setValue(SELF_START,false);//开机自启
+        settings.setValue("address","192.168.63.1");
+        settings.setValue("port",1314);
     }
     //读取系统配置文件 设置用户
     QSettings settings(this->systemConfigPath,QSettings::IniFormat);
@@ -437,6 +441,8 @@ void DataUntil::writeDbData(QByteArray dbData)
     file.resize(0);
     file.write(dbData);
     file.close();
+    //写完后打开数据库
+    this->initDateBase();
 }
 
 void DataUntil::updateMedifyTime(QString newMedifyTime)
@@ -543,13 +549,16 @@ QList<Plan *> DataUntil::loadOnceDonePlan()
     return ans;
 }
 //创建用户文件夹
-void DataUntil::createUserDir()
+bool DataUntil::createUserDir()
 {
+    bool newUser=false;
     //创建文件夹
     QDir dir(this->userDirPath);
     if(!dir.exists()){
         dir.mkdir(this->userDirPath);
         qDebug()<<"创建"+this->username<<"文件夹";
+        if(this->username!="local")
+            newUser=true;
     }
     //创建用户配置文件 local则不创建
     if(this->username!="local"){
@@ -560,4 +569,5 @@ void DataUntil::createUserDir()
             settings.setValue(MYSYNCHRONIZE,false);
         }
     }
+    return newUser;
 }

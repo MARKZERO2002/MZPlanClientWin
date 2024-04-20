@@ -171,9 +171,9 @@ PlanDetail::~PlanDetail()
 
 Plan *PlanDetail::toPlan()
 {
-    QString format;//选择用什么格式
-    //如果当前是once被选中，则要使用QDateTime格式yyyy/MM/dd hh:mm:ss
-    if(this->ui->onceRBtn->isChecked()){
+    QString format;
+    //如果当前是once被选中或当前计划已完成，则要使用QDateTime格式yyyy/MM/dd hh:mm:ss
+    if(this->ui->onceRBtn->isChecked()||this->tplan->completedTime.isValid()){
         format=DTFORMAT;
     }else{//否则使用QTime格式hh:mm:ss
         format=TFORMAT;

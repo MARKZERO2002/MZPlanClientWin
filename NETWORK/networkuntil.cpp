@@ -5,6 +5,7 @@
 #include <DATA/datauntil.h>
 
 #include <QMessageBox>
+#include <QSettings>
 
 #include <SHOW/mzplanclientwin.h>
 
@@ -26,11 +27,11 @@ void NetWorkUntil::regist(QString username,QString password)
     data.insert(PASSWORD,password);
     pdu.data=data;
     this->tcpSocket->write(pdu.toByteArray());
-    if(!this->tcpSocket->waitForReadyRead()){
+    if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
-        delete this->tcpSocket;
-        this->tcpSocket=nullptr;
+        if(this->tcpSocket)
+            this->tcpSocket->disconnectFromHost();
         DataUntil::getInstance().setSynchronize(false);
         MZPlanClientWin::getInstance().setSynchronize(false);
     }
@@ -46,11 +47,11 @@ void NetWorkUntil::login(QString username,QString password)
     data.insert(PASSWORD,password);
     pdu.data=data;
     this->tcpSocket->write(pdu.toByteArray());
-    if(!this->tcpSocket->waitForReadyRead()){
+    if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
-        delete this->tcpSocket;
-        this->tcpSocket=nullptr;
+        if(this->tcpSocket)
+            this->tcpSocket->disconnectFromHost();
         DataUntil::getInstance().setSynchronize(false);
         MZPlanClientWin::getInstance().setSynchronize(false);
     }
@@ -65,11 +66,11 @@ void NetWorkUntil::cancle()
     data.insert(USERNAME,DataUntil::getInstance().username);
     pdu.data=data;
     this->tcpSocket->write(pdu.toByteArray());
-    if(!this->tcpSocket->waitForReadyRead()){
+    if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
-        delete this->tcpSocket;
-        this->tcpSocket=nullptr;
+        if(this->tcpSocket)
+            this->tcpSocket->disconnectFromHost();
         DataUntil::getInstance().setSynchronize(false);
         MZPlanClientWin::getInstance().setSynchronize(false);
     }
@@ -88,11 +89,11 @@ void NetWorkUntil::synchronize(bool status)
     data.insert(MEDIFYTIME,DataUntil::getInstance().medifyTime);
     pdu.data=data;
     this->tcpSocket->write(pdu.toByteArray());
-    if(!this->tcpSocket->waitForReadyRead()){
+    if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
-        delete this->tcpSocket;
-        this->tcpSocket=nullptr;
+        if(this->tcpSocket)
+            this->tcpSocket->disconnectFromHost();
         DataUntil::getInstance().setSynchronize(false);
     }
 }
@@ -119,9 +120,6 @@ void NetWorkUntil::handleLogin(QJsonObject data)
         //切换用户
         DataUntil::getInstance().changeUser(data.value(USERNAME).toString());
         DataUntil::getInstance().updateUser();
-        //同步一次
-        if(DataUntil::getInstance().isSynchronize)
-            this->synchronize();
         //切换页面
         MZPlanClientWin::getInstance().on_userBtn_clicked();
     }else{
@@ -141,7 +139,6 @@ void NetWorkUntil::handleCancle(QJsonObject data)
         //切换到本地用户
         DataUntil::getInstance().changeUser("local");
         DataUntil::getInstance().updateUser();
-
         //切换页面
         MZPlanClientWin::getInstance().on_userBtn_clicked();
         //登出
@@ -160,11 +157,10 @@ void NetWorkUntil::handleSynchronize(QJsonObject data)
         DataUntil::getInstance().writeDbData(dbdata);
         //更新时间
         DataUntil::getInstance().updateMedifyTime(data.value(MEDIFYTIME).toString());
-        //刷新数据
-        QDate date=QDate::currentDate();
+        //如果是打开软件时的同步，则主界面类还没初始化，不能执行下面语句
         if(!this->status){
-            //用选择时间 初始化完毕
-            date=MZPlanClientWin::getInstance().choiceDate;
+            //更新计划数据
+            QDate date=MZPlanClientWin::getInstance().choiceDate;
             DataUntil::getInstance().reloadChoicePlan(date);
             DataUntil::getInstance().reloadCurrentPlan();
             //刷新界面
@@ -172,6 +168,26 @@ void NetWorkUntil::handleSynchronize(QJsonObject data)
         }
     }
     qDebug()<<data.value(MSG_STRING).toString();
+}
+
+void NetWorkUntil::handleUpdate(QJsonObject data)
+{
+    //打开同步请求的才做修改
+    if(DataUntil::getInstance().isSynchronize){
+        QString newMedifyTime=data.value(MEDIFYTIME).toString();
+        //如果本地的信息旧则更新
+        if(DataUntil::getInstance().medifyTime<newMedifyTime){
+            QByteArray dbdata=QByteArray::fromBase64(data.value(DB_DATA).toString().toUtf8());
+            DataUntil::getInstance().writeDbData(dbdata);
+            DataUntil::getInstance().updateMedifyTime(newMedifyTime);
+            //更新计划数据
+            QDate date=MZPlanClientWin::getInstance().choiceDate;
+            DataUntil::getInstance().reloadChoicePlan(date);
+            DataUntil::getInstance().reloadCurrentPlan();
+            //刷新界面
+            MZPlanClientWin::getInstance().updateInterface();
+        }
+    }
 }
 
 void NetWorkUntil::logout()
@@ -196,7 +212,12 @@ void NetWorkUntil::initTcp()
 {
     if(!this->tcpSocket){
         this->tcpSocket=new QTcpSocket();
-        this->tcpSocket->connectToHost(QHostAddress("192.168.63.1"),1314);
+        //从文件中读取配置
+        QSettings settings(DataUntil::getInstance().systemConfigPath,QSettings::IniFormat);
+        QString address=settings.value("address").toString();
+        int port=settings.value("port").toInt();
+        qDebug()<<"连接到："<<address<<" "<<port;
+        this->tcpSocket->connectToHost(QHostAddress(address),port);
         //连接信号
         connect(this->tcpSocket,&QTcpSocket::disconnected,[this]{
             //失去连接就删除该对象
@@ -227,6 +248,9 @@ void NetWorkUntil::handleTcpSocketReadyRead()
         break;
     case SYNOCHRONIZE_PLAN_RESPONSE:
         this->handleSynchronize(pdu.data);
+        break;
+    case UPDATE:
+        this->handleUpdate(pdu.data);
         break;
     default:
         qDebug()<<"未知消息";

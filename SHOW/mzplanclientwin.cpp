@@ -604,6 +604,9 @@ void MZPlanClientWin::on_loginBtn_clicked()
     if(!this->checkValid())
         return;
     NetWorkUntil::getInstance().login(username,password);
+    //同步一次
+    if(DataUntil::getInstance().isSynchronize)
+        NetWorkUntil::getInstance().synchronize();
 }
 
 
@@ -611,9 +614,9 @@ void MZPlanClientWin::on_logoutBtn_clicked()
 {
     NetWorkUntil::getInstance().logout();
     this->clearPlanList();
-    DataUntil::getInstance().setSynchronize(false);
     DataUntil::getInstance().changeUser("local");
     DataUntil::getInstance().updateUser();
+    this->ui->synchronizeBtn->setChecked(false);
     this->on_userBtn_clicked();
 }
 

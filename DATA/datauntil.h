@@ -43,7 +43,7 @@ public:
     static DataUntil &getInstance();
     //用户操作
     void updateUser();
-    void changeUser(const QString &username);//更改当前用户
+    bool changeUser(const QString &username);//更改当前用户
     void removeUserDir();
     //数据操作
     QList<Plan*> getChoicePlans(PlanList::Status status);//获取某个状态的所有计划
@@ -67,7 +67,7 @@ private:
     void initUserConfig();//初始化用户配置文件
     void initDateBase();//初始化数据库
     //用户操作
-    void createUserDir();//创建用户文件夹及数据 本机登陆新用户时调用
+    bool createUserDir();//创建用户文件夹及数据 本机登陆新用户时调用
     //数据操作
     bool isCompeleted(const Plan* plan);
     void listDeletePlan(Plan* plan);

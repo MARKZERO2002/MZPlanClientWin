@@ -34,6 +34,7 @@ void Remind::mouseDoubleClickEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
     //切换到主界面
+    MZPlanClientWin::getInstance().setCurrenDate(QDate::currentDate());
     MZPlanClientWin::getInstance().show();
     MZPlanClientWin::getInstance().activateWindow();
     //删除自己
