@@ -192,9 +192,8 @@ void NetWorkUntil::handleUpdate(QJsonObject data)
 
 void NetWorkUntil::logout()
 {
-    if(!this->tcpSocket){
-        delete this->tcpSocket;
-        this->tcpSocket=nullptr;
+    if(this->tcpSocket&&this->tcpSocket->state()==QAbstractSocket::ConnectedState){
+        this->tcpSocket->disconnectFromHost();
     }
 }
 
@@ -221,14 +220,12 @@ void NetWorkUntil::initTcp()
         //连接信号
         connect(this->tcpSocket,&QTcpSocket::disconnected,[this]{
             //失去连接就删除该对象
-            if(this->tcpSocket){
-                delete this->tcpSocket;
-                this->tcpSocket=nullptr;
-            }
+            this->tcpSocket->deleteLater();
+            this->tcpSocket=nullptr;
         });
         connect(this->tcpSocket,&QTcpSocket::readyRead,this,&NetWorkUntil::handleTcpSocketReadyRead);//读数据
     }
-    if(this->tcpSocket->state()!=QAbstractSocket::ConnectedState){
+    if(!this->tcpSocket||this->tcpSocket->state()!=QAbstractSocket::ConnectedState){
         DataUntil::getInstance().setSynchronize(false);
     }
 }
