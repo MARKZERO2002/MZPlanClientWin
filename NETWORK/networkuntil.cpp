@@ -20,13 +20,10 @@ NetWorkUntil &NetWorkUntil::getInstance()
 void NetWorkUntil::regist(QString username,QString password)
 {
     this->initTcp();
-    PDU pdu;
-    pdu.msgType=REGIST_REQUEST;
     QJsonObject data;
     data.insert(USERNAME,username);
     data.insert(PASSWORD,password);
-    pdu.data=data;
-    this->tcpSocket->write(pdu.toByteArray());
+    this->tcpSocket->write(createSendData(REGIST_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
@@ -40,13 +37,10 @@ void NetWorkUntil::regist(QString username,QString password)
 void NetWorkUntil::login(QString username,QString password)
 {
     this->initTcp();
-    PDU pdu;
-    pdu.msgType=LOGIN_REQUEST;
     QJsonObject data;
     data.insert(USERNAME,username);
     data.insert(PASSWORD,password);
-    pdu.data=data;
-    this->tcpSocket->write(pdu.toByteArray());
+    this->tcpSocket->write(createSendData(LOGIN_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
@@ -60,12 +54,9 @@ void NetWorkUntil::login(QString username,QString password)
 void NetWorkUntil::cancle()
 {
     this->initTcp();
-    PDU pdu;
-    pdu.msgType=CANCEL_REQUEST;
     QJsonObject data;
     data.insert(USERNAME,DataUntil::getInstance().username);
-    pdu.data=data;
-    this->tcpSocket->write(pdu.toByteArray());
+    this->tcpSocket->write(createSendData(CANCEL_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
@@ -80,15 +71,12 @@ void NetWorkUntil::synchronize(bool status)
 {
     this->status=status;
     this->initTcp();
-    PDU pdu;
-    pdu.msgType=SYNOCHRONIZE_PLAN_REQUEST;
     QJsonObject data;
     QString dbdata=DataUntil::getInstance().getDbData().toBase64();
     data.insert(DB_DATA,dbdata);
     data.insert(USERNAME,DataUntil::getInstance().username);
     data.insert(MEDIFYTIME,DataUntil::getInstance().medifyTime);
-    pdu.data=data;
-    this->tcpSocket->write(pdu.toByteArray());
+    this->tcpSocket->write(createSendData(SYNOCHRONIZE_PLAN_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
         QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
@@ -182,6 +170,7 @@ void NetWorkUntil::handleUpdate(QJsonObject data)
             DataUntil::getInstance().updateMedifyTime(newMedifyTime);
             //更新计划数据
             QDate date=MZPlanClientWin::getInstance().choiceDate;
+            MZPlanClientWin::getInstance().clearPlanList();
             DataUntil::getInstance().reloadChoicePlan(date);
             DataUntil::getInstance().reloadCurrentPlan();
             //刷新界面
@@ -232,34 +221,47 @@ void NetWorkUntil::initTcp()
 
 void NetWorkUntil::handleTcpSocketReadyRead()
 {
-    //检测收到的数据是否是完整的json格式
-    this->m_buffer.append(this->tcpSocket->readAll());
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(m_buffer, &error);
-    if(error.error!=QJsonParseError::NoError){//说明没接收到完整消息
-        return;
-    }
-    //收到完整消息了 释放缓冲区
-    this->m_buffer.clear();
-    PDU pdu=PDU(doc);
-    switch(pdu.msgType){
-    case REGIST_RESPONSE:
-        this->handleRegist(pdu.data);
-        break;
-    case LOGIN_RESPONSE:
-        this->handleLogin(pdu.data);
-        break;
-    case CANCEL_RESPONSE:
-        this->handleCancle(pdu.data);
-        break;
-    case SYNOCHRONIZE_PLAN_RESPONSE:
-        this->handleSynchronize(pdu.data);
-        break;
-    case UPDATE:
-        this->handleUpdate(pdu.data);
-        break;
-    default:
-        qDebug()<<"未知消息";
-        break;
+    while(this->tcpSocket&&this->tcpSocket->bytesAvailable()){
+        //存入缓冲区
+        this->m_buffer.append(this->tcpSocket->readAll());
+        //查看是否收到完整头
+        if(this->m_buffer.size()<static_cast<qsizetype>(sizeof(quint32)*2)){//因为协议的头是由两个32int组成的
+            qDebug()<<"没接收到完整头";
+            return;
+        }
+        //查看是否接受到完整数据
+        PduHearder header=deserializeHeader(this->m_buffer.left(sizeof(quint32)*2));//用两个int32组成头部
+
+        if(this->m_buffer.mid(sizeof(quint32)*2).size()<header.length){//如果当前缓冲区的数据去掉头，长度不与length一致
+            qDebug()<<"没接收到完整消息";
+            return;
+        }
+        QByteArray jsData=this->m_buffer.mid(sizeof(quint32)*2,header.length);
+        this->m_buffer.remove(0,sizeof(quint32)*2+header.length);//移除缓冲区数据
+        qDebug()<<"接收到完整数据，开始处理";
+        //组建pdu
+        Pdu pdu;
+        pdu.header=header;
+        pdu.data=QJsonDocument::fromJson(jsData).object();
+        switch(pdu.header.msgType){
+        case REGIST_RESPONSE:
+            this->handleRegist(pdu.data);
+            break;
+        case LOGIN_RESPONSE:
+            this->handleLogin(pdu.data);
+            break;
+        case CANCEL_RESPONSE:
+            this->handleCancle(pdu.data);
+            break;
+        case SYNOCHRONIZE_PLAN_RESPONSE:
+            this->handleSynchronize(pdu.data);
+            break;
+        case UPDATE:
+            this->handleUpdate(pdu.data);
+            break;
+        default:
+            qDebug()<<"未知消息";
+            break;
+        }
     }
 }
