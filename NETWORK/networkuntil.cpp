@@ -20,50 +20,44 @@ NetWorkUntil &NetWorkUntil::getInstance()
 void NetWorkUntil::regist(QString username,QString password)
 {
     this->initTcp();
+    if(!this->tcpSocket)
+        return;
     QJsonObject data;
     data.insert(USERNAME,username);
     data.insert(PASSWORD,password);
     this->tcpSocket->write(createSendData(REGIST_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
-        QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
-        if(this->tcpSocket)
-            this->tcpSocket->disconnectFromHost();
-        DataUntil::getInstance().setSynchronize(false);
-        MZPlanClientWin::getInstance().setSynchronize(false);
+        this->tcpSocket->disconnectFromHost();
     }
 }
 
 void NetWorkUntil::login(QString username,QString password)
 {
     this->initTcp();
+    if(!this->tcpSocket)
+        return;
     QJsonObject data;
     data.insert(USERNAME,username);
     data.insert(PASSWORD,password);
     this->tcpSocket->write(createSendData(LOGIN_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
-        QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
-        if(this->tcpSocket)
-            this->tcpSocket->disconnectFromHost();
-        DataUntil::getInstance().setSynchronize(false);
-        MZPlanClientWin::getInstance().setSynchronize(false);
+        this->tcpSocket->disconnectFromHost();
     }
 }
 
 void NetWorkUntil::cancle()
 {
     this->initTcp();
+    if(!this->tcpSocket)
+        return;
     QJsonObject data;
     data.insert(USERNAME,DataUntil::getInstance().username);
     this->tcpSocket->write(createSendData(CANCEL_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
-        QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
-        if(this->tcpSocket)
-            this->tcpSocket->disconnectFromHost();
-        DataUntil::getInstance().setSynchronize(false);
-        MZPlanClientWin::getInstance().setSynchronize(false);
+        this->tcpSocket->disconnectFromHost();
     }
 }
 
@@ -71,6 +65,8 @@ void NetWorkUntil::synchronize(bool status)
 {
     this->status=status;
     this->initTcp();
+    if(!this->tcpSocket)
+        return;
     QJsonObject data;
     QString dbdata=DataUntil::getInstance().getDbData().toBase64();
     data.insert(DB_DATA,dbdata);
@@ -79,10 +75,7 @@ void NetWorkUntil::synchronize(bool status)
     this->tcpSocket->write(createSendData(SYNOCHRONIZE_PLAN_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
-        QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
-        if(this->tcpSocket)
-            this->tcpSocket->disconnectFromHost();
-        DataUntil::getInstance().setSynchronize(false);
+        this->tcpSocket->disconnectFromHost();
     }
 }
 
@@ -207,15 +200,23 @@ void NetWorkUntil::initTcp()
         qDebug()<<"连接到："<<address<<" "<<port;
         this->tcpSocket->connectToHost(QHostAddress(address),port);
         //连接信号
-        connect(this->tcpSocket,&QTcpSocket::disconnected,[this]{
+        connect(this->tcpSocket,&QTcpSocket::disconnected,[this](){
             //失去连接就删除该对象
             this->tcpSocket->deleteLater();
             this->tcpSocket=nullptr;
+            DataUntil::getInstance().setSynchronize(false);
+            MZPlanClientWin::getInstance().setSynchronize(false);
         });
         connect(this->tcpSocket,&QTcpSocket::readyRead,this,&NetWorkUntil::handleTcpSocketReadyRead);//读数据
-    }
-    if(!this->tcpSocket||this->tcpSocket->state()!=QAbstractSocket::ConnectedState){
-        DataUntil::getInstance().setSynchronize(false);
+        QTimer::singleShot(2000,this,[this](){
+            if(this->tcpSocket->state()!=QAbstractSocket::ConnectedState){
+                QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
+                MZPlanClientWin::getInstance().setSynchronize(false);
+                DataUntil::getInstance().setSynchronize(false);
+                this->tcpSocket->deleteLater();
+                this->tcpSocket=nullptr;
+            }
+        });
     }
 }
 
