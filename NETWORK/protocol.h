@@ -30,7 +30,9 @@ enum MsgType{
     CANCEL_RESPONSE,
     SYNOCHRONIZE_PLAN_RESPONSE,
     //要求更新客户端数据
-    UPDATE
+    UPDATE,
+    //心跳
+    PALPITATE
 
 };
 struct PduHearder{

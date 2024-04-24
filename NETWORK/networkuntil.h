@@ -3,6 +3,7 @@
 
 #include <QTcpSocket>
 #include <QObject>
+#include <QTimer>
 
 
 class NetWorkUntil:public QObject
@@ -26,12 +27,14 @@ private:
     QTcpSocket *tcpSocket=nullptr;
     bool status;//判断是不是打开软件时的同步
     QByteArray m_buffer;//接收缓冲区
+    QTimer* timer=nullptr;//用于保活
 private:
     NetWorkUntil();
     ~NetWorkUntil();
-    void initTcp();
+    bool initTcp();
 public slots:
     void handleTcpSocketReadyRead();
+    void sendPalpitatePacket();//发送心跳包
 };
 
 #endif // NETWORKUNTIL_H

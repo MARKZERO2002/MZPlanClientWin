@@ -19,8 +19,7 @@ NetWorkUntil &NetWorkUntil::getInstance()
 
 void NetWorkUntil::regist(QString username,QString password)
 {
-    this->initTcp();
-    if(!this->tcpSocket)
+    if(!this->initTcp())
         return;
     QJsonObject data;
     data.insert(USERNAME,username);
@@ -28,14 +27,13 @@ void NetWorkUntil::regist(QString username,QString password)
     this->tcpSocket->write(createSendData(REGIST_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
-        this->tcpSocket->disconnectFromHost();
+        this->tcpSocket->close();
     }
 }
 
 void NetWorkUntil::login(QString username,QString password)
 {
-    this->initTcp();
-    if(!this->tcpSocket)
+    if(!this->initTcp())
         return;
     QJsonObject data;
     data.insert(USERNAME,username);
@@ -43,29 +41,27 @@ void NetWorkUntil::login(QString username,QString password)
     this->tcpSocket->write(createSendData(LOGIN_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
-        this->tcpSocket->disconnectFromHost();
+        this->tcpSocket->close();
     }
 }
 
 void NetWorkUntil::cancle()
 {
-    this->initTcp();
-    if(!this->tcpSocket)
+    if(!this->initTcp())
         return;
     QJsonObject data;
     data.insert(USERNAME,DataUntil::getInstance().username);
     this->tcpSocket->write(createSendData(CANCEL_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
-        this->tcpSocket->disconnectFromHost();
+        this->tcpSocket->close();
     }
 }
 
 void NetWorkUntil::synchronize(bool status)
 {
     this->status=status;
-    this->initTcp();
-    if(!this->tcpSocket)
+    if(!this->initTcp())
         return;
     QJsonObject data;
     QString dbdata=DataUntil::getInstance().getDbData().toBase64();
@@ -75,7 +71,7 @@ void NetWorkUntil::synchronize(bool status)
     this->tcpSocket->write(createSendData(SYNOCHRONIZE_PLAN_REQUEST,data));
     if(!this->tcpSocket->waitForReadyRead(5000)){
         //连接失败 说明网络不好 销毁并且设置同步信号为false
-        this->tcpSocket->disconnectFromHost();
+        this->tcpSocket->close();
     }
 }
 
@@ -186,38 +182,50 @@ NetWorkUntil::NetWorkUntil()
 
 NetWorkUntil::~NetWorkUntil()
 {
-
+    if(this->tcpSocket){
+        this->tcpSocket->deleteLater();
+        this->tcpSocket=nullptr;
+    }
 }
 
-void NetWorkUntil::initTcp()
+bool NetWorkUntil::initTcp()
 {
     if(!this->tcpSocket){
-        this->tcpSocket=new QTcpSocket();
+        this->tcpSocket=new QTcpSocket(this);
+        this->tcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption,true);//保持活性
+        //连接信号
         //从文件中读取配置
         QSettings settings(DataUntil::getInstance().systemConfigPath,QSettings::IniFormat);
         QString address=settings.value("address").toString();
         int port=settings.value("port").toInt();
-        qDebug()<<"连接到："<<address<<" "<<port;
         this->tcpSocket->connectToHost(QHostAddress(address),port);
-        //连接信号
-        connect(this->tcpSocket,&QTcpSocket::disconnected,[this](){
-            //失去连接就删除该对象
-            this->tcpSocket->deleteLater();
-            this->tcpSocket=nullptr;
-            DataUntil::getInstance().setSynchronize(false);
-            MZPlanClientWin::getInstance().setSynchronize(false);
-        });
-        connect(this->tcpSocket,&QTcpSocket::readyRead,this,&NetWorkUntil::handleTcpSocketReadyRead);//读数据
-        QTimer::singleShot(2000,this,[this](){
-            if(this->tcpSocket->state()!=QAbstractSocket::ConnectedState){
-                QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接","连接服务器失败，请检查网络或联系管理员");
-                MZPlanClientWin::getInstance().setSynchronize(false);
-                DataUntil::getInstance().setSynchronize(false);
+        if(this->tcpSocket->waitForConnected()){
+            connect(this->tcpSocket,&QTcpSocket::disconnected,[this](){
+                //失去连接就删除该对象
                 this->tcpSocket->deleteLater();
                 this->tcpSocket=nullptr;
+                DataUntil::getInstance().setSynchronize(false);
+                MZPlanClientWin::getInstance().setSynchronize(false);
+                this->timer->stop();
+            });
+            connect(this->tcpSocket,&QTcpSocket::readyRead,this,&NetWorkUntil::handleTcpSocketReadyRead);//读数据
+            //定时器 每1m发送一次心跳包
+            if(!this->timer){
+                this->timer=new QTimer(this);
+                this->timer->setInterval(60000);
+                this->timer->setSingleShot(false);//多次定时
+                connect(this->timer,&QTimer::timeout,this,&NetWorkUntil::sendPalpitatePacket);
             }
-        });
+            this->timer->start();
+            return true;
+        }else{
+            QMessageBox::warning(&MZPlanClientWin::getInstance(),"网络连接失败","连接到远程服务器时失败");
+            this->tcpSocket->deleteLater();
+            this->tcpSocket=nullptr;
+            return false;
+        }
     }
+    return true;
 }
 
 void NetWorkUntil::handleTcpSocketReadyRead()
@@ -265,4 +273,11 @@ void NetWorkUntil::handleTcpSocketReadyRead()
             break;
         }
     }
+}
+
+void NetWorkUntil::sendPalpitatePacket()
+{
+    QJsonObject data=QJsonObject();
+    this->tcpSocket->write(createSendData(PALPITATE,data));
+    qDebug()<<"发出心跳包";
 }
